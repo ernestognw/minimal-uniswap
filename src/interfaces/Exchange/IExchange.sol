@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
+import {IFactory} from "../Factory/IFactory.sol";
+
 import {IPriceInfo} from "./IPriceInfo.sol";
 import {ILiquidity} from "./ILiquidity.sol";
 import {IETHToToken} from "./IETHToToken.sol";
@@ -45,8 +48,8 @@ interface IExchange is
     /// ===== VARIABLES ===== ///
 
     /// @return token Address of the underlying token sold by this exchange.
-    function token() external view returns (address token);
+    function token() external view returns (IERC20 token);
 
     /// @return factory Address of the factory that created this exchange.
-    function factory() external view returns (address factory);
+    function factory() external view returns (IFactory factory);
 }

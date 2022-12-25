@@ -12,7 +12,7 @@ import {IFactory} from "./interfaces/Factory/IFactory.sol";
 /// @author Ernesto García (@ernestognw)
 /// @notice A minimal Solidity implementation of a Uniswap V1 Exchange
 /// @dev Inspired by https://hackmd.io/C-DvwDSfSxuh-Gd4WKE_ig
-contract Exchange is ERC20, IExchange {
+abstract contract Exchange is ERC20, IExchange {
     using SafeERC20 for IERC20;
 
     /// @notice Address of the underlying token sold by this exchange.
@@ -96,12 +96,8 @@ contract Exchange is ERC20, IExchange {
         uint256 totalLiquidity = totalSupply();
         require(totalLiquidity > 0, "Exchange: No liqiduity available");
 
-        uint256 ethAmount = Math.mulDiv(
-            amount,
-            address(this).balance,
-            totalLiquidity
-        );
-        uint256 tokenAmount = Math.mulDiv(
+        ethAmount = Math.mulDiv(amount, address(this).balance, totalLiquidity);
+        tokenAmount = Math.mulDiv(
             amount,
             token.balanceOf(address(this)),
             totalLiquidity
@@ -119,7 +115,5 @@ contract Exchange is ERC20, IExchange {
         token.safeTransfer(msg.sender, tokenAmount);
 
         emit RemoveLiquidity(msg.sender, ethAmount, tokenAmount);
-
-        return (ethAmount, tokenAmount);
     }
 }
