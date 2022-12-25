@@ -21,20 +21,17 @@ abstract contract Exchange is ERC20, IExchange {
     /// @notice Address of the factory that created this exchange.
     IFactory public factory;
 
-    constructor(
-        address _token,
-        string memory name,
-        string memory symbol
-    ) ERC20(name, symbol) {
+    constructor(address _token, string memory name, string memory symbol) ERC20(name, symbol) {
         factory = IFactory(msg.sender);
         token = IERC20(_token);
     }
 
-    function addLiquidity(
-        uint256 minLiquidity,
-        uint256 maxTokens,
-        uint256 deadline
-    ) external payable override returns (uint256 minted) {
+    function addLiquidity(uint256 minLiquidity, uint256 maxTokens, uint256 deadline)
+        external
+        payable
+        override
+        returns (uint256 minted)
+    {
         require(deadline > block.timestamp, "Exchange: Expired transaction");
         require(maxTokens > 0, "Exchange: maxTokens amount can't be 0");
         require(msg.value > 0, "Exchange: ETH amount can't be 0");
@@ -45,33 +42,16 @@ abstract contract Exchange is ERC20, IExchange {
             require(minLiquidity > 0, "Exchange: minLiquidity can't be 0");
             uint256 ethReserve = address(this).balance - msg.value;
             uint256 tokenReserve = token.balanceOf(address(this));
-            uint256 tokenAmount = Math.mulDiv(
-                msg.value,
-                tokenReserve,
-                ethReserve
-            );
-            uint256 liquidityMinted = Math.mulDiv(
-                msg.value,
-                totalLiquidity,
-                ethReserve
-            );
-            require(
-                maxTokens >= tokenAmount,
-                "Exchange: Token amount to deposit exceeds maxTokens"
-            );
-            require(
-                liquidityMinted >= minLiquidity,
-                "Exchange: LPTokens to receive are less than minLiquidity"
-            );
+            uint256 tokenAmount = Math.mulDiv(msg.value, tokenReserve, ethReserve);
+            uint256 liquidityMinted = Math.mulDiv(msg.value, totalLiquidity, ethReserve);
+            require(maxTokens >= tokenAmount, "Exchange: Token amount to deposit exceeds maxTokens");
+            require(liquidityMinted >= minLiquidity, "Exchange: LPTokens to receive are less than minLiquidity");
             _mint(msg.sender, liquidityMinted);
             token.safeTransferFrom(msg.sender, address(this), tokenAmount);
             emit AddLiquidity(msg.sender, msg.value, tokenAmount);
             return liquidityMinted;
         } else {
-            require(
-                msg.value >= 1 gwei,
-                "Exchange: Min 1 gwei ETH liquidity not met"
-            );
+            require(msg.value >= 1 gwei, "Exchange: Min 1 gwei ETH liquidity not met");
             assert(factory.getExchange(address(token)) == address(this));
             uint256 tokenAmount = maxTokens;
             uint256 initialLiquidity = address(this).balance;
@@ -82,12 +62,11 @@ abstract contract Exchange is ERC20, IExchange {
         }
     }
 
-    function removeLiquidity(
-        uint256 amount,
-        uint256 minEth,
-        uint256 minTokens,
-        uint256 deadline
-    ) external override returns (uint256 ethAmount, uint256 tokenAmount) {
+    function removeLiquidity(uint256 amount, uint256 minEth, uint256 minTokens, uint256 deadline)
+        external
+        override
+        returns (uint256 ethAmount, uint256 tokenAmount)
+    {
         require(deadline > block.timestamp, "Exchange: Expired transaction");
         require(amount > 0, "Exchange: amount amount can't be 0");
         require(minEth > 0, "Exchange: minEth amount can't be 0");
@@ -97,17 +76,10 @@ abstract contract Exchange is ERC20, IExchange {
         require(totalLiquidity > 0, "Exchange: No liqiduity available");
 
         ethAmount = Math.mulDiv(amount, address(this).balance, totalLiquidity);
-        tokenAmount = Math.mulDiv(
-            amount,
-            token.balanceOf(address(this)),
-            totalLiquidity
-        );
+        tokenAmount = Math.mulDiv(amount, token.balanceOf(address(this)), totalLiquidity);
 
         require(ethAmount >= minEth, "Exchange: minEth to receive not met");
-        require(
-            tokenAmount >= minTokens,
-            "Exchange: minTokens to receive not met"
-        );
+        require(tokenAmount >= minTokens, "Exchange: minTokens to receive not met");
 
         _burn(msg.sender, amount);
 

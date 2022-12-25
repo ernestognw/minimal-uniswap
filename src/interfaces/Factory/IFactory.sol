@@ -32,9 +32,7 @@ interface IFactory {
     /// @dev Returns 0 when the token doesn't have an exchange.
     /// @param token Address of the exchange's underlying token.
     /// @return exchange Address of the exchange.
-    function getExchange(
-        address token
-    ) external view returns (address exchange);
+    function getExchange(address token) external view returns (address exchange);
 
     /// ===== TOKEN ===== ///
 
@@ -46,7 +44,5 @@ interface IFactory {
     /// @notice Get an underlying token given a tokenId.
     /// @param tokenId Identifier of the token. Assigned during exchange creation.
     /// @return token Address of the underlying token for the tokenId.
-    function getTokenWithId(
-        uint256 tokenId
-    ) external view returns (address token);
+    function getTokenWithId(uint256 tokenId) external view returns (address token);
 }
