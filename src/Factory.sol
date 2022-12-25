@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {IFactory} from "./interfaces/IFactory.sol";
+import {IFactory} from "./interfaces/Factory/IFactory.sol";
 
 /// @title Minimal Uniswap V1 Factory
 /// @author Ernesto García (@ernestognw)
