@@ -6,3 +6,11 @@
 	path = lib/openzeppelin-contracts
 	url = https://github.com/OpenZeppelin/openzeppelin-contracts
 	branch = v4.8.0
+[submodule "lib/solidity-docgen"]
+	path = lib/solidity-docgen
+	url = https://github.com/OpenZeppelin/solidity-docgen
+	branch = v0.5.17
+[submodule "lib/solc-js"]
+	path = lib/solc-js
+	url = https://github.com/ethereum/solc-js
+	branch = v0.8.17
