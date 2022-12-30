@@ -26,6 +26,26 @@ abstract contract Exchange is ERC20, IExchange {
         token = IERC20(_token);
     }
 
+    function getEthToTokenInputPrice(uint256 ethSold) external view override returns (uint256 tokensToBuy) {
+        require(ethSold > 0, "Price for 0 ethSold is 0");
+        return getInputPrice(ethSold, address(this).balance, token.balanceOf(address(this)));
+    }
+
+    function getEthToTokenOutputPrice(uint256 tokensBought) external view override returns (uint256 ethNeeded) {
+        require(tokensBought > 0, "Price for 0 tokensBought is 0");
+        return getOutputPrice(tokensBought, address(this).balance, token.balanceOf(address(this)));
+    }
+
+    function getTokenToEthInputPrice(uint256 tokensSold) external view override returns (uint256 ethToBuy) {
+        require(tokensSold > 0, "Price for 0 tokensSold is 0");
+        return getInputPrice(tokensSold, token.balanceOf(address(this)), address(this).balance);
+    }
+
+    function getTokenToEthOutputPrice(uint256 ethBought) external view override returns (uint256 tokensNeeded) {
+        require(ethBought > 0, "Price for 0 ethBought is 0");
+        return getOutputPrice(ethBought, token.balanceOf(address(this)), address(this).balance);
+    }
+
     function addLiquidity(uint256 minLiquidity, uint256 maxTokens, uint256 deadline)
         external
         payable
@@ -87,5 +107,38 @@ abstract contract Exchange is ERC20, IExchange {
         token.safeTransfer(msg.sender, tokenAmount);
 
         emit RemoveLiquidity(msg.sender, ethAmount, tokenAmount);
+    }
+
+    /// @dev Pricing function for converting between ETH and tokens.
+    /// @param inputAmount Amount of ETH or tokens being sold.
+    /// @param inputReserve Amount of ETH or tokens (input type) in exchange reserves.
+    /// @param outputReserve Amount of ETH or tokens (output type) in exchange reserves.
+    /// @return bought Amount of ETH or tokens bought.
+    function getInputPrice(uint256 inputAmount, uint256 inputReserve, uint256 outputReserve)
+        private
+        pure
+        returns (uint256 bought)
+    {
+        require(inputReserve > 0, "Can't calculate price with 0 input reserves");
+        require(outputReserve > 0, "Cant' calculate price with 0 output reserves");
+        uint256 inputAmountWithFee = inputAmount * 997;
+        uint256 denominator = (inputReserve * 1000) + inputAmountWithFee;
+        return Math.mulDiv(inputAmountWithFee, outputReserve, denominator);
+    }
+
+    /// @dev Pricing function for converting between ETH and tokens.
+    /// @param outputAmount Amount of ETH or tokens being bought.
+    /// @param inputReserve Amount of ETH or tokens (input type) in exchange reserves.
+    /// @param outputReserve Amount of ETH or tokens (output type) in exchange reserves.
+    /// @return sold Amount of ETH or tokens sold.
+    function getOutputPrice(uint256 outputAmount, uint256 inputReserve, uint256 outputReserve)
+        private
+        pure
+        returns (uint256 sold)
+    {
+        require(inputReserve > 0, "Can't calculate price with 0 input reserves");
+        require(outputReserve > 0, "Cant' calculate price with 0 output reserves");
+        uint256 denominator = (outputReserve - outputAmount) * 997;
+        return Math.mulDiv(inputReserve, outputAmount * 1000, denominator);
     }
 }
