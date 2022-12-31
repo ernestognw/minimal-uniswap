@@ -135,6 +135,40 @@ Convert tokens to ETH and transfers ETH to recipient.
 User specifies maximum input and exact output.
 
 
+### `tokenToTokenSwapInput(uint256 tokensSold, uint256 minTokensBought, uint256 minEthBought, uint64 deadline, address tokenAddr) → uint256 tokensBought` (external)
+
+Convert underlying tokens to tokenAddr tokens.
+
+
+User specifies exact input and minimum output.
+
+
+### `tokenToTokenSwapOutput(uint256 tokensBought, uint256 maxTokensSold, uint256 maxEthSold, uint64 deadline, address tokenAddr) → uint256 tokensSold` (external)
+
+Convert underlying tokens to tokenAddr tokens.
+
+
+User specifies maximum input and exact output.
+
+
+### `tokenToTokenTransferInput(uint256 tokensSold, uint256 minTokensBought, uint256 minEthBought, uint64 deadline, address recipient, address tokenAddr) → uint256 tokensBought` (external)
+
+Convert underlying tokens to tokenAddr tokens and transfers
+        tokenAddr tokens to recipient.
+
+
+User specifies exact input and minimum output.
+
+
+### `tokenToTokenTransferOutput(uint256 tokensBought, uint256 maxTokensSold, uint256 maxEthSold, uint64 deadline, address recipient, address tokenAddr) → uint256 tokensSold` (external)
+
+Convert underlying tokens to tokenAddr tokens and transfers
+        tokenAddr tokens to recipient.
+
+
+User specifies maximum input and exact output.
+
+
 
 
 

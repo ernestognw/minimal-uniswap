@@ -60,7 +60,7 @@ interface ITokenToToken {
     /// @notice Convert underlying tokens to tokenAddr tokens and transfers
     ///         tokenAddr tokens to recipient.
     /// @dev User specifies maximum input and exact output.
-    /// @param tokens_bought Amount of tokenAddr tokens bought.
+    /// @param tokensBought Amount of tokenAddr tokens bought.
     /// @param maxTokensSold Maximum underlying tokens sold.
     /// @param maxEthSold Maximum ETH purchased as intermediary.
     /// @param deadline Time after which this transaction can no longer be executed.
@@ -68,7 +68,7 @@ interface ITokenToToken {
     /// @param tokenAddr The address of the token being purchased.
     /// @return tokensSold Amount of underlying tokens sold.
     function tokenToTokenTransferOutput(
-        uint256 tokens_bought,
+        uint256 tokensBought,
         uint256 maxTokensSold,
         uint256 maxEthSold,
         uint64 deadline,

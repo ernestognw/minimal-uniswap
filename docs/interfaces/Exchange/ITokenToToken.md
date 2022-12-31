@@ -31,7 +31,7 @@ Convert underlying tokens to tokenAddr tokens and transfers
 User specifies exact input and minimum output.
 
 
-### `tokenToTokenTransferOutput(uint256 tokens_bought, uint256 maxTokensSold, uint256 maxEthSold, uint64 deadline, address recipient, address tokenAddr) → uint256 tokensSold` (external)
+### `tokenToTokenTransferOutput(uint256 tokensBought, uint256 maxTokensSold, uint256 maxEthSold, uint64 deadline, address recipient, address tokenAddr) → uint256 tokensSold` (external)
 
 Convert underlying tokens to tokenAddr tokens and transfers
         tokenAddr tokens to recipient.
