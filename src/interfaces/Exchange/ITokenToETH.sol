@@ -6,9 +6,9 @@ pragma solidity 0.8.17;
 /// @notice Only Exchange's token-to-ETH functions
 /// @dev Inspired by https://hackmd.io/C-DvwDSfSxuh-Gd4WKE_ig
 interface ITokenToETH {
-    /// @notice Convert Tokens to ETH.
+    /// @notice Convert tokens to ETH.
     /// @dev User specifies exact input and minimum output.
-    /// @param tokensSold Amount of Tokens sold.
+    /// @param tokensSold Amount of tokens sold.
     /// @param minEth Minimum ETH purchased.
     /// @param deadline Time after which this transaction can no longer be executed.
     /// @return ethBought Amount of ETH bought.
