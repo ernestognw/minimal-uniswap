@@ -10,12 +10,21 @@ import {IETHToToken} from "./IETHToToken.sol";
 import {ITokenToETH} from "./ITokenToETH.sol";
 import {ITokenToToken} from "./ITokenToToken.sol";
 import {ITokenToExchangeToken} from "./ITokenToExchangeToken.sol";
+import {IErrors} from "./IErrors.sol";
 
 /// @title Uniswap V1 Exchange Interface
 /// @author Ernesto García (@ernestognw)
 /// @notice Interface defining a Uniswap V1 Exchange
 /// @dev Inspired by https://hackmd.io/C-DvwDSfSxuh-Gd4WKE_ig
-interface IExchange is IPriceInfo, ILiquidity, IETHToToken, ITokenToETH, ITokenToToken, ITokenToExchangeToken {
+interface IExchange is
+    IPriceInfo,
+    ILiquidity,
+    IETHToToken,
+    ITokenToETH,
+    ITokenToToken,
+    ITokenToExchangeToken,
+    IErrors
+{
     /// ===== EVENTS ===== ///
 
     /// @notice Emitted when tokens are purchased for ETH.

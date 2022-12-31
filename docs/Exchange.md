@@ -5,6 +5,12 @@ A minimal Solidity implementation of a Uniswap V1 Exchange
 
 Inspired by https://hackmd.io/C-DvwDSfSxuh-Gd4WKE_ig
 
+### `notExpired(uint64 deadline)`
+
+
+
+
+
 
 ### `setup(address _token, string name, string symbol)` (public)
 
