@@ -6,7 +6,7 @@ A minimal Solidity implementation of a Uniswap V1 Exchange
 Inspired by https://hackmd.io/C-DvwDSfSxuh-Gd4WKE_ig
 
 
-### `constructor(address _token, string name, string symbol)` (internal)
+### `constructor(address _token, string name, string symbol)` (public)
 
 
 
@@ -166,6 +166,44 @@ Convert underlying tokens to tokenAddr tokens and transfers
         tokenAddr tokens to recipient.
 
 
+User specifies maximum input and exact output.
+
+
+### `tokenToExchangeSwapInput(uint256 tokensSold, uint256 minTokensBought, uint256 minEthBought, uint64 deadline, address exchangeAddr) → uint256 tokensBought` (external)
+
+Convert underlying tokens to exchangeAddr tokens.
+
+
+Allows trades through contracts that were not deployed from the same factory.
+User specifies exact input and minimum output.
+
+
+### `tokenToExchangeSwapOutput(uint256 tokensBought, uint256 maxTokensSold, uint256 maxEthSold, uint64 deadline, address exchangeAddr) → uint256 tokensSold` (external)
+
+Convert underlying tokens to exchangeAddr tokens.
+
+
+Allows trades through contracts that were not deployed from the same factory.
+User specifies maximum input and exact output.
+
+
+### `tokenToExchangeTransferInput(uint256 tokensSold, uint256 minTokensBought, uint256 minEthBought, uint64 deadline, address recipient, address exchangeAddr) → uint256 tokensBought` (external)
+
+Convert underlying tokens to exchangeAddr tokens and transfers
+        exchangeAddr tokens to recipient.
+
+
+Allows trades through contracts that were not deployed from the same factory.
+User specifies exact input and minimum output.
+
+
+### `tokenToExchangeTransferOutput(uint256 tokensBought, uint256 maxTokensSold, uint256 maxEthSold, uint64 deadline, address recipient, address exchangeAddr) → uint256 tokensSold` (external)
+
+Convert underlying tokens to exchangeAddr tokens and transfers
+        exchangeAddr tokens to recipient.
+
+
+Allows trades through contracts that were not deployed from the same factory.
 User specifies maximum input and exact output.
 
 
