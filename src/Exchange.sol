@@ -8,6 +8,11 @@ import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 import {IExchange} from "./interfaces/Exchange/IExchange.sol";
 import {IFactory} from "./interfaces/Factory/IFactory.sol";
 
+// Only for @inheritdoc
+import {IPriceInfo} from "./interfaces/Exchange/IPriceInfo.sol";
+import {ILiquidity} from "./interfaces/Exchange/ILiquidity.sol";
+import {IETHToToken} from "./interfaces/Exchange/IETHToToken.sol";
+
 /// @title Minimal Uniswap V1 Exchange
 /// @author Ernesto García (@ernestognw)
 /// @notice A minimal Solidity implementation of a Uniswap V1 Exchange
@@ -26,26 +31,31 @@ abstract contract Exchange is ERC20, IExchange {
         token = IERC20(_token);
     }
 
+    /// @inheritdoc IPriceInfo
     function getEthToTokenInputPrice(uint256 ethSold) external view override returns (uint256 tokensToBuy) {
         require(ethSold > 0, "Exchange: Price for 0 ethSold is 0");
         return getInputPrice(ethSold, address(this).balance, token.balanceOf(address(this)));
     }
 
+    /// @inheritdoc IPriceInfo
     function getEthToTokenOutputPrice(uint256 tokensBought) external view override returns (uint256 ethNeeded) {
         require(tokensBought > 0, "Exchange: Price for 0 tokensBought is 0");
         return getOutputPrice(tokensBought, address(this).balance, token.balanceOf(address(this)));
     }
 
+    /// @inheritdoc IPriceInfo
     function getTokenToEthInputPrice(uint256 tokensSold) external view override returns (uint256 ethToBuy) {
         require(tokensSold > 0, "Exchange: Price for 0 tokensSold is 0");
         return getInputPrice(tokensSold, token.balanceOf(address(this)), address(this).balance);
     }
 
+    /// @inheritdoc IPriceInfo
     function getTokenToEthOutputPrice(uint256 ethBought) external view override returns (uint256 tokensNeeded) {
         require(ethBought > 0, "Exchange: Price for 0 ethBought is 0");
         return getOutputPrice(ethBought, token.balanceOf(address(this)), address(this).balance);
     }
 
+    /// @inheritdoc ILiquidity
     function addLiquidity(uint256 minLiquidity, uint256 maxTokens, uint64 deadline)
         external
         payable
@@ -82,6 +92,7 @@ abstract contract Exchange is ERC20, IExchange {
         }
     }
 
+    /// @inheritdoc ILiquidity
     function removeLiquidity(uint256 amount, uint256 minEth, uint256 minTokens, uint64 deadline)
         external
         override
@@ -142,14 +153,17 @@ abstract contract Exchange is ERC20, IExchange {
         return Math.mulDiv(inputReserve, outputAmount * 1000, denominator);
     }
 
+    /// @inheritdoc IETHToToken
     receive() external payable {
         ethToTokenInput(msg.value, 1, uint64(block.timestamp), msg.sender, msg.sender);
     }
 
+    /// @inheritdoc IETHToToken
     fallback() external payable {
         ethToTokenInput(msg.value, 1, uint64(block.timestamp), msg.sender, msg.sender);
     }
 
+    /// @inheritdoc IETHToToken
     function ethToTokenSwapInput(uint256 minTokens, uint64 deadline)
         external
         payable
@@ -159,6 +173,7 @@ abstract contract Exchange is ERC20, IExchange {
         return ethToTokenInput(msg.value, minTokens, deadline, msg.sender, msg.sender);
     }
 
+    /// @inheritdoc IETHToToken
     function ethToTokenSwapOutput(uint256 tokensBought, uint64 deadline)
         external
         payable
@@ -168,6 +183,7 @@ abstract contract Exchange is ERC20, IExchange {
         return ethToTokenOutput(tokensBought, msg.value, deadline, msg.sender, msg.sender);
     }
 
+    /// @inheritdoc IETHToToken
     function ethToTokenTransferInput(uint256 minTokens, uint64 deadline, address recipient)
         external
         payable
@@ -179,6 +195,7 @@ abstract contract Exchange is ERC20, IExchange {
         return ethToTokenInput(msg.value, minTokens, deadline, msg.sender, recipient);
     }
 
+    /// @inheritdoc IETHToToken
     function ethToTokenTransferOutput(uint256 tokensBought, uint64 deadline, address recipient)
         external
         payable
