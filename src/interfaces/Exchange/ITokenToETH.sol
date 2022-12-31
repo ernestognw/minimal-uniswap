@@ -12,7 +12,7 @@ interface ITokenToETH {
     /// @param minEth Minimum ETH purchased.
     /// @param deadline Time after which this transaction can no longer be executed.
     /// @return ethBought Amount of ETH bought.
-    function tokenToEthSwapInput(uint256 tokensSold, uint256 minEth, uint256 deadline)
+    function tokenToEthSwapInput(uint256 tokensSold, uint256 minEth, uint64 deadline)
         external
         returns (uint256 ethBought);
 
@@ -22,7 +22,7 @@ interface ITokenToETH {
     /// @param maxTokens Maximum tokens sold.
     /// @param deadline Time after which this transaction can no longer be executed.
     /// @return tokensSold Amount of tokens sold.
-    function tokenToEthSwapOutput(uint256 ethBought, uint256 maxTokens, uint256 deadline)
+    function tokenToEthSwapOutput(uint256 ethBought, uint256 maxTokens, uint64 deadline)
         external
         returns (uint256 tokensSold);
 
@@ -33,7 +33,7 @@ interface ITokenToETH {
     /// @param deadline Time after which this transaction can no longer be executed.
     /// @param recipient The address that receives output ETH.
     /// @return ethBought Amount of ETH bought.
-    function tokenToEthTransferInput(uint256 tokensSold, uint256 minEth, uint256 deadline, address recipient)
+    function tokenToEthTransferInput(uint256 tokensSold, uint256 minEth, uint64 deadline, address recipient)
         external
         returns (uint256 ethBought);
 
@@ -44,7 +44,7 @@ interface ITokenToETH {
     /// @param deadline Time after which this transaction can no longer be executed.
     /// @param recipient The address that receives output ETH.
     /// @return tokensSold Amount of tokens sold.
-    function tokenToEthTransferOutput(uint256 ethBought, uint256 max_tokens, uint256 deadline, address recipient)
+    function tokenToEthTransferOutput(uint256 ethBought, uint256 max_tokens, uint64 deadline, address recipient)
         external
         returns (uint256 tokensSold);
 }

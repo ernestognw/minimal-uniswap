@@ -26,7 +26,7 @@ interface ILiquidity {
     /// @param maxTokens Maximum number of tokens deposited. Deposits max amount if total LPTokens supply is 0.
     /// @param deadline Time after which this transaction can no longer be executed.
     /// @return minted The amount of LPTokens minted.
-    function addLiquidity(uint256 minLiquidity, uint256 maxTokens, uint256 deadline)
+    function addLiquidity(uint256 minLiquidity, uint256 maxTokens, uint64 deadline)
         external
         payable
         returns (uint256 minted);
@@ -38,7 +38,7 @@ interface ILiquidity {
     /// @param deadline Time after which this transaction can no longer be executed.
     /// @return ethAmount The amount of ETH withdrawn.
     /// @return tokenAmount The amount of tokens withdrawn.
-    function removeLiquidity(uint256 amount, uint256 minEth, uint256 minTokens, uint256 deadline)
+    function removeLiquidity(uint256 amount, uint256 minEth, uint256 minTokens, uint64 deadline)
         external
         returns (uint256 ethAmount, uint256 tokenAmount);
 }

@@ -18,7 +18,7 @@ interface ITokenToToken {
         uint256 tokensSold,
         uint256 minTokensBought,
         uint256 minEthBought,
-        uint256 deadline,
+        uint64 deadline,
         address tokenAddr
     ) external returns (uint256 tokensBought);
 
@@ -34,7 +34,7 @@ interface ITokenToToken {
         uint256 tokensBought,
         uint256 maxTokensSold,
         uint256 maxEthSold,
-        uint256 deadline,
+        uint64 deadline,
         address tokenAddr
     ) external returns (uint256 tokensSold);
 
@@ -52,7 +52,7 @@ interface ITokenToToken {
         uint256 tokensSold,
         uint256 minTokensBought,
         uint256 minEthBought,
-        uint256 deadline,
+        uint64 deadline,
         address recipient,
         address tokenAddr
     ) external returns (uint256 tokensBought);
@@ -71,7 +71,7 @@ interface ITokenToToken {
         uint256 tokens_bought,
         uint256 maxTokensSold,
         uint256 maxEthSold,
-        uint256 deadline,
+        uint64 deadline,
         address recipient,
         address tokenAddr
     ) external returns (uint256 tokensSold);

@@ -27,26 +27,26 @@ abstract contract Exchange is ERC20, IExchange {
     }
 
     function getEthToTokenInputPrice(uint256 ethSold) external view override returns (uint256 tokensToBuy) {
-        require(ethSold > 0, "Price for 0 ethSold is 0");
+        require(ethSold > 0, "Exchange: Price for 0 ethSold is 0");
         return getInputPrice(ethSold, address(this).balance, token.balanceOf(address(this)));
     }
 
     function getEthToTokenOutputPrice(uint256 tokensBought) external view override returns (uint256 ethNeeded) {
-        require(tokensBought > 0, "Price for 0 tokensBought is 0");
+        require(tokensBought > 0, "Exchange: Price for 0 tokensBought is 0");
         return getOutputPrice(tokensBought, address(this).balance, token.balanceOf(address(this)));
     }
 
     function getTokenToEthInputPrice(uint256 tokensSold) external view override returns (uint256 ethToBuy) {
-        require(tokensSold > 0, "Price for 0 tokensSold is 0");
+        require(tokensSold > 0, "Exchange: Price for 0 tokensSold is 0");
         return getInputPrice(tokensSold, token.balanceOf(address(this)), address(this).balance);
     }
 
     function getTokenToEthOutputPrice(uint256 ethBought) external view override returns (uint256 tokensNeeded) {
-        require(ethBought > 0, "Price for 0 ethBought is 0");
+        require(ethBought > 0, "Exchange: Price for 0 ethBought is 0");
         return getOutputPrice(ethBought, token.balanceOf(address(this)), address(this).balance);
     }
 
-    function addLiquidity(uint256 minLiquidity, uint256 maxTokens, uint256 deadline)
+    function addLiquidity(uint256 minLiquidity, uint256 maxTokens, uint64 deadline)
         external
         payable
         override
@@ -82,7 +82,7 @@ abstract contract Exchange is ERC20, IExchange {
         }
     }
 
-    function removeLiquidity(uint256 amount, uint256 minEth, uint256 minTokens, uint256 deadline)
+    function removeLiquidity(uint256 amount, uint256 minEth, uint256 minTokens, uint64 deadline)
         external
         override
         returns (uint256 ethAmount, uint256 tokenAmount)
@@ -140,5 +140,96 @@ abstract contract Exchange is ERC20, IExchange {
         require(outputReserve > 0, "Cant' calculate price with 0 output reserves");
         uint256 denominator = (outputReserve - outputAmount) * 997;
         return Math.mulDiv(inputReserve, outputAmount * 1000, denominator);
+    }
+
+    receive() external payable {
+        ethToTokenInput(msg.value, 1, uint64(block.timestamp), msg.sender, msg.sender);
+    }
+
+    fallback() external payable {
+        ethToTokenInput(msg.value, 1, uint64(block.timestamp), msg.sender, msg.sender);
+    }
+
+    function ethToTokenSwapInput(uint256 minTokens, uint64 deadline)
+        external
+        payable
+        override
+        returns (uint256 tokensBought)
+    {
+        return ethToTokenInput(msg.value, minTokens, deadline, msg.sender, msg.sender);
+    }
+
+    function ethToTokenSwapOutput(uint256 tokensBought, uint64 deadline)
+        external
+        payable
+        override
+        returns (uint256 ethSold)
+    {
+        return ethToTokenOutput(tokensBought, msg.value, deadline, msg.sender, msg.sender);
+    }
+
+    function ethToTokenTransferInput(uint256 minTokens, uint64 deadline, address recipient)
+        external
+        payable
+        override
+        returns (uint256 tokensBought)
+    {
+        require(recipient != address(this), "Exchange: Can't buy tokens and send them to Exchange");
+        require(recipient != address(0), "Exchange: Can't buy tokens and send them to ZERO_ADDRESS");
+        return ethToTokenInput(msg.value, minTokens, deadline, msg.sender, recipient);
+    }
+
+    function ethToTokenTransferOutput(uint256 tokensBought, uint64 deadline, address recipient)
+        external
+        payable
+        override
+        returns (uint256 ethSold)
+    {
+        require(recipient != address(this), "Exchange: Can't buy tokens and send them to Exchange");
+        require(recipient != address(0), "Exchange: Can't buy tokens and send them to ZERO_ADDRESS");
+        return ethToTokenOutput(tokensBought, msg.value, deadline, msg.sender, recipient);
+    }
+
+    /// @dev Transfers an amount of tokens based on ETH sold.
+    /// @param ethSold Amount of ETH being sold.
+    /// @param minTokens Minimum tokens bought.
+    /// @param deadline Time after which this transaction can no longer be executed.
+    /// @param buyer The address that sent the ETH sold.
+    /// @param recipient The address that receives the tokens bought.
+    /// @return tokensBought Amount of tokens sold.
+    function ethToTokenInput(uint256 ethSold, uint256 minTokens, uint64 deadline, address buyer, address recipient)
+        private
+        returns (uint256 tokensBought)
+    {
+        require(deadline > block.timestamp, "Exchange: Expired transaction");
+        require(minTokens > 0, "Exchange: minTokens amount can't be 0");
+        require(ethSold > 0, "Exchange: ethSold amount can't be 0");
+        uint256 tokenReserve = token.balanceOf(address(this));
+        tokensBought = getInputPrice(ethSold, address(this).balance - ethSold, tokenReserve);
+        require(tokensBought >= minTokens, "Exchange: minTokens to receive not met");
+        token.transfer(recipient, tokensBought);
+        emit TokenPurchase(buyer, ethSold, tokensBought);
+    }
+
+    /// @dev Transfers an amount of tokens bought.
+    /// @param tokensBought Amount of tokens being bought.
+    /// @param maxEth Maximum ETH sold.
+    /// @param deadline Time after which this transaction can no longer be executed.
+    /// @param buyer The address that sent the ETH sold.
+    /// @param recipient The address that receives the tokens bought.
+    /// @return ethSold Amount of ETH sold.
+    function ethToTokenOutput(uint256 tokensBought, uint256 maxEth, uint64 deadline, address buyer, address recipient)
+        private
+        returns (uint256 ethSold)
+    {
+        require(deadline > block.timestamp, "Exchange: Expired transaction");
+        require(tokensBought > 0, "Exchange: tokensBought amount can't be 0");
+        require(ethSold > 0, "Exchange: ethSold amount can't be 0");
+        uint256 tokenReserve = token.balanceOf(address(this));
+        ethSold = getOutputPrice(tokensBought, address(this).balance - maxEth, tokenReserve);
+        uint256 ethRefund = maxEth - ethSold; // Throws if ethSold > maxEth
+        if (ethRefund > 0) payable(buyer).transfer(ethRefund);
+        token.safeTransfer(recipient, tokensBought);
+        emit TokenPurchase(buyer, ethSold, tokensBought);
     }
 }
