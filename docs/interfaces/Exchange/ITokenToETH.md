@@ -8,7 +8,7 @@ Inspired by https://hackmd.io/C-DvwDSfSxuh-Gd4WKE_ig
 
 ### `tokenToEthSwapInput(uint256 tokensSold, uint256 minEth, uint64 deadline) → uint256 ethBought` (external)
 
-Convert Tokens to ETH.
+Convert tokens to ETH.
 
 
 User specifies exact input and minimum output.

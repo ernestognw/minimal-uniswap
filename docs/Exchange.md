@@ -103,6 +103,38 @@ Convert ETH to tokens and transfers tokens to recipient.
 User specifies maximum input (msg.value) and exact output.
 
 
+### `tokenToEthSwapInput(uint256 tokensSold, uint256 minEth, uint64 deadline) → uint256 ethBought` (external)
+
+Convert tokens to ETH.
+
+
+User specifies exact input and minimum output.
+
+
+### `tokenToEthSwapOutput(uint256 ethBought, uint256 maxTokens, uint64 deadline) → uint256 tokensSold` (external)
+
+Convert tokens to ETH.
+
+
+User specifies maximum input and exact output.
+
+
+### `tokenToEthTransferInput(uint256 tokensSold, uint256 minEth, uint64 deadline, address recipient) → uint256 ethBought` (external)
+
+Convert tokens to ETH and transfers ETH to recipient.
+
+
+User specifies exact input and minimum output.
+
+
+### `tokenToEthTransferOutput(uint256 ethBought, uint256 maxTokens, uint64 deadline, address recipient) → uint256 tokensSold` (external)
+
+Convert tokens to ETH and transfers ETH to recipient.
+
+
+User specifies maximum input and exact output.
+
+
 
 
 
