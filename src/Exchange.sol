@@ -29,9 +29,24 @@ contract Exchange is ERC20, IExchange {
     /// @notice Address of the factory that created this exchange.
     IFactory public factory;
 
-    constructor(address _token, string memory name, string memory symbol) ERC20(name, symbol) {
+    /// @notice Override name
+    string private _name;
+
+    /// @notice Override symbol
+    string private _symbol;
+
+    constructor() ERC20("Uniswap V1 Template", "UNI-TMP") {}
+
+    /// @dev This function acts as a contract constructor which is not currently supported in contracts deployed
+    ///      using ERC 1167 minimal proxy. It is called once by the factory during contract creation.
+    function setup(address _token, string memory name, string memory symbol) public {
+        require(address(factory) != address(0), "Already initialized");
+        require(address(token) != address(0), "Already initialized");
+        require(_token != address(0), "Provided token address can't be ZERO_ADDRESS");
         factory = IFactory(msg.sender);
         token = IERC20(_token);
+        _name = name;
+        _symbol = symbol;
     }
 
     /// @inheritdoc IPriceInfo

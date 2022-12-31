@@ -6,11 +6,12 @@ A minimal Solidity implementation of a Uniswap V1 Exchange
 Inspired by https://hackmd.io/C-DvwDSfSxuh-Gd4WKE_ig
 
 
-### `constructor(address _token, string name, string symbol)` (public)
+### `setup(address _token, string name, string symbol)` (public)
 
 
 
-
+This function acts as a contract constructor which is not currently supported in contracts deployed
+     using ERC 1167 minimal proxy. It is called once by the factory during contract creation.
 
 ### `getEthToTokenInputPrice(uint256 ethSold) → uint256 tokensToBuy` (external)
 
