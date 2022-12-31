@@ -14,12 +14,13 @@ import {ILiquidity} from "./interfaces/Exchange/ILiquidity.sol";
 import {IETHToToken} from "./interfaces/Exchange/IETHToToken.sol";
 import {ITokenToETH} from "./interfaces/Exchange/ITokenToETH.sol";
 import {ITokenToToken} from "./interfaces/Exchange/ITokenToToken.sol";
+import {ITokenToExchangeToken} from "./interfaces/Exchange/ITokenToExchangeToken.sol";
 
 /// @title Minimal Uniswap V1 Exchange
 /// @author Ernesto García (@ernestognw)
 /// @notice A minimal Solidity implementation of a Uniswap V1 Exchange
 /// @dev Inspired by https://hackmd.io/C-DvwDSfSxuh-Gd4WKE_ig
-abstract contract Exchange is ERC20, IExchange {
+contract Exchange is ERC20, IExchange {
     using SafeERC20 for IERC20;
 
     /// @notice Address of the underlying token sold by this exchange.
@@ -445,5 +446,58 @@ abstract contract Exchange is ERC20, IExchange {
         token.safeTransferFrom(buyer, address(this), tokensSold);
         Exchange(payable(exchangeAddr)).ethToTokenTransferOutput{value: ethBought}(tokensBought, deadline, recipient);
         emit EthPurchase(buyer, tokensSold, ethBought);
+    }
+
+    /// @inheritdoc ITokenToExchangeToken
+    function tokenToExchangeSwapInput(
+        uint256 tokensSold,
+        uint256 minTokensBought,
+        uint256 minEthBought,
+        uint64 deadline,
+        address exchangeAddr
+    ) external returns (uint256 tokensBought) {
+        return _tokenToTokenInput(
+            tokensSold, minTokensBought, minEthBought, deadline, msg.sender, msg.sender, exchangeAddr
+        );
+    }
+
+    /// @inheritdoc ITokenToExchangeToken
+    function tokenToExchangeSwapOutput(
+        uint256 tokensBought,
+        uint256 maxTokensSold,
+        uint256 maxEthSold,
+        uint64 deadline,
+        address exchangeAddr
+    ) external returns (uint256 tokensSold) {
+        return
+            _tokenToTokenOutput(tokensBought, maxTokensSold, maxEthSold, deadline, msg.sender, msg.sender, exchangeAddr);
+    }
+
+    /// @inheritdoc ITokenToExchangeToken
+    function tokenToExchangeTransferInput(
+        uint256 tokensSold,
+        uint256 minTokensBought,
+        uint256 minEthBought,
+        uint64 deadline,
+        address recipient,
+        address exchangeAddr
+    ) external returns (uint256 tokensBought) {
+        require(recipient != address(this), "Exchange: Can't buy tokens and send them to Exchange");
+        return
+            _tokenToTokenInput(tokensSold, minTokensBought, minEthBought, deadline, msg.sender, recipient, exchangeAddr);
+    }
+
+    /// @inheritdoc ITokenToExchangeToken
+    function tokenToExchangeTransferOutput(
+        uint256 tokensBought,
+        uint256 maxTokensSold,
+        uint256 maxEthSold,
+        uint64 deadline,
+        address recipient,
+        address exchangeAddr
+    ) external returns (uint256 tokensSold) {
+        require(recipient != address(this), "Exchange: Can't buy tokens and send them to Exchange");
+        return
+            _tokenToTokenOutput(tokensBought, maxTokensSold, maxEthSold, deadline, msg.sender, recipient, exchangeAddr);
     }
 }
