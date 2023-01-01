@@ -9,6 +9,49 @@ Inspired by https://hackmd.io/C-DvwDSfSxuh-Gd4WKE_ig
 
 
 
+Requires a deadline that hasn't expired
+
+
+### `requireTokensSold(address tokenAddr, uint256 sold)`
+
+
+
+Requires sold to be > 0
+
+
+### `requireTokensBought(address tokenAddr, uint256 bought)`
+
+
+
+Requires bought to be > 0
+
+
+### `requireEthSold(uint256 sold)`
+
+
+
+Requires sold to be > 0
+
+
+### `requireEthBought(uint256 bought)`
+
+
+
+Requires bought to be > 0
+
+
+### `requireValidRecipient(address recipient)`
+
+
+
+Checks if recipient is valid
+
+
+### `requireReserves(uint256 inputReserve, uint256 outputReserve)`
+
+
+
+Checks if reserves are > 0
 
 
 
