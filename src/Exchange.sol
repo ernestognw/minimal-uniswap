@@ -23,10 +23,10 @@ import {ITokenToExchangeToken} from "./interfaces/Exchange/ITokenToExchangeToken
 contract Exchange is ERC20, IExchange {
     using SafeERC20 for IERC20;
 
-    /// @notice Address of the underlying token sold by this exchange.
+    /// @inheritdoc IExchange
     IERC20 public token;
 
-    /// @notice Address of the factory that created this exchange.
+    /// @inheritdoc IExchange
     IFactory public factory;
 
     /// @notice Override name
@@ -90,15 +90,14 @@ contract Exchange is ERC20, IExchange {
 
     constructor() ERC20("Uniswap V1 Template", "UNI-TMP") {}
 
-    /// @dev This function acts as a contract constructor which is not currently supported in contracts deployed
-    ///      using ERC 1167 minimal proxy. It is called once by the factory during contract creation.
-    function setup(address _token, string memory name, string memory symbol) public {
+    /// @inheritdoc IExchange
+    function setup(address _token) public {
         if (address(factory) != address(0) || address(token) != address(0)) revert AlreadyInitialized();
         if (_token == address(0)) revert InvalidToken(_token);
         factory = IFactory(msg.sender);
         token = IERC20(_token);
-        _name = name;
-        _symbol = symbol;
+        _name = "Liquidity Provider Uniswap V1";
+        _symbol = "LPUNI-V1";
     }
 
     /// @inheritdoc IPriceInfo
@@ -163,7 +162,9 @@ contract Exchange is ERC20, IExchange {
             uint256 tokenAmount = Math.mulDiv(msg.value, _tokenReserve(), ethReserve);
             uint256 liquidityMinted = Math.mulDiv(msg.value, totalLiquidity, ethReserve);
             if (maxTokens < tokenAmount) revert ExceededTokensSold(address(token), tokenAmount, maxTokens);
-            if (liquidityMinted < minLiquidity) revert ExceededTokensBought(address(this), liquidityMinted, minLiquidity);
+            if (liquidityMinted < minLiquidity) {
+                revert ExceededTokensBought(address(this), liquidityMinted, minLiquidity);
+            }
             _mint(msg.sender, liquidityMinted);
             token.safeTransferFrom(msg.sender, address(this), tokenAmount);
             emit AddLiquidity(msg.sender, msg.value, tokenAmount);

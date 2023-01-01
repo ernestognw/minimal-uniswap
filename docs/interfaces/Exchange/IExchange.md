@@ -18,6 +18,14 @@ Inspired by https://hackmd.io/C-DvwDSfSxuh-Gd4WKE_ig
 
 
 
+### `setup(address _token)` (external)
+
+
+
+This function acts as a contract constructor which is not currently supported in contracts deployed
+     using ERC 1167 minimal proxy. It is called once by the factory during contract creation.
+
+
 
 ### `TokenPurchase(address buyer, uint256 ethSold, uint256 tokensBought)`
 

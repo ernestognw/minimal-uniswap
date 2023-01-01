@@ -55,12 +55,13 @@ Checks if reserves are > 0
 
 
 
-### `setup(address _token, string name, string symbol)` (public)
+### `setup(address _token)` (public)
 
 
 
 This function acts as a contract constructor which is not currently supported in contracts deployed
      using ERC 1167 minimal proxy. It is called once by the factory during contract creation.
+
 
 ### `getEthToTokenInputPrice(uint256 ethSold) → uint256 tokensToBuy` (external)
 

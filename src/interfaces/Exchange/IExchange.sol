@@ -46,4 +46,9 @@ interface IExchange is
 
     /// @return factory Address of the factory that created this exchange.
     function factory() external view returns (IFactory factory);
+
+    /// @dev This function acts as a contract constructor which is not currently supported in contracts deployed
+    ///      using ERC 1167 minimal proxy. It is called once by the factory during contract creation.
+    /// @param _token address of the underlying token.
+    function setup(address _token) external;
 }
