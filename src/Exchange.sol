@@ -150,7 +150,7 @@ contract Exchange is ERC20, IExchange {
         external
         payable
         override
-        notExpired(deadline + 1) // +1 so modifier act as deadline <= block.timestamp
+        notExpired(deadline)
         requireTokensSold(address(token), maxTokens)
         requireEthSold(msg.value)
         returns (uint256 minted)
@@ -184,7 +184,7 @@ contract Exchange is ERC20, IExchange {
     function removeLiquidity(uint256 amount, uint256 minEth, uint256 minTokens, uint64 deadline)
         external
         override
-        notExpired(deadline + 1) // +1 so modifier act as deadline <= block.timestamp
+        notExpired(deadline)
         requireTokensSold(address(this), amount)
         requireEthBought(minEth)
         requireTokensBought(address(token), minTokens)
