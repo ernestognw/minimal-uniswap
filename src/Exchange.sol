@@ -155,30 +155,8 @@ contract Exchange is ERC20, IExchange {
         returns (uint256 minted)
     {
         uint256 totalLiquidity = totalSupply();
-
-        if (totalLiquidity > 0) {
-            if (minLiquidity <= 0) revert InsufficientTokensBought(address(this), minLiquidity, 1);
-            uint256 ethReserve = _ethReserve(msg.value);
-            uint256 tokenAmount = Math.mulDiv(msg.value, _tokenReserve(), ethReserve);
-            uint256 liquidityMinted = Math.mulDiv(msg.value, totalLiquidity, ethReserve);
-            if (maxTokens < tokenAmount) revert ExceededTokensSold(address(token), tokenAmount, maxTokens);
-            if (liquidityMinted < minLiquidity) {
-                revert ExceededTokensBought(address(this), liquidityMinted, minLiquidity);
-            }
-            _mint(msg.sender, liquidityMinted);
-            token.safeTransferFrom(msg.sender, address(this), tokenAmount);
-            emit AddLiquidity(msg.sender, msg.value, tokenAmount);
-            return liquidityMinted;
-        } else {
-            if (msg.value < 1 gwei) revert InsufficientEthSold(msg.value, 1 gwei);
-            assert(factory.getExchange(address(token)) == address(this));
-            uint256 tokenAmount = maxTokens;
-            uint256 initialLiquidity = _ethReserve();
-            _mint(msg.sender, initialLiquidity);
-            token.safeTransferFrom(msg.sender, address(this), tokenAmount);
-            emit AddLiquidity(msg.sender, msg.value, tokenAmount);
-            return initialLiquidity;
-        }
+        if (totalLiquidity > 0) return _addLiquidity(minLiquidity, maxTokens, totalLiquidity);
+        return _addInitialLiquidity(maxTokens);
     }
 
     /// @inheritdoc ILiquidity
@@ -397,6 +375,40 @@ contract Exchange is ERC20, IExchange {
     ) external requireValidRecipient(recipient) returns (uint256 tokensSold) {
         return
             _tokenToTokenOutput(tokensBought, maxTokensSold, maxEthSold, deadline, msg.sender, recipient, exchangeAddr);
+    }
+
+    /// @dev Adds liquidity when totalLiquidity is > 0
+    ///      Should NOT be used if totalLiquidity is 0
+    /// @param minLiquidity Minimum number of LPTokens sender will mint if total LPTokens supply is greater than 0.
+    /// @param maxTokens Maximum number of tokens deposited. Deposits max amount if total LPTokens supply is 0.
+    /// @param totalLiquidity Current amount of LPTokens for this exchange. MUST NOT be 0.
+    /// @return liquidityMinted The amount of LPTokens minted.
+    function _addLiquidity(uint256 minLiquidity, uint256 maxTokens, uint256 totalLiquidity)
+        private
+        requireTokensBought(address(this), minLiquidity)
+        returns (uint256 liquidityMinted)
+    {
+        uint256 ethReserve = _ethReserve(msg.value);
+        uint256 tokenAmount = Math.mulDiv(msg.value, _tokenReserve(), ethReserve);
+        liquidityMinted = Math.mulDiv(msg.value, totalLiquidity, ethReserve);
+        if (maxTokens < tokenAmount) revert ExceededTokensSold(address(token), tokenAmount, maxTokens);
+        if (liquidityMinted < minLiquidity) revert ExceededTokensBought(address(this), liquidityMinted, minLiquidity);
+        _mint(msg.sender, liquidityMinted);
+        token.safeTransferFrom(msg.sender, address(this), tokenAmount);
+        emit AddLiquidity(msg.sender, msg.value, tokenAmount);
+    }
+
+    /// @dev Adds liquidity when current liquidity is 0.
+    /// @param maxTokens Maximum number of tokens deposited. Deposits max amount if total LPTokens supply is 0.
+    /// @return initialLiquidity The amount of LPTokens minted.
+    function _addInitialLiquidity(uint256 maxTokens) private returns (uint256 initialLiquidity) {
+        if (msg.value < 1 gwei) revert InsufficientEthSold(msg.value, 1 gwei);
+        assert(factory.getExchange(address(token)) == address(this));
+        uint256 tokenAmount = maxTokens;
+        initialLiquidity = _ethReserve();
+        _mint(msg.sender, initialLiquidity);
+        token.safeTransferFrom(msg.sender, address(this), tokenAmount);
+        emit AddLiquidity(msg.sender, msg.value, tokenAmount);
     }
 
     /// @dev Amount of reserves in tokens
