@@ -35,59 +35,6 @@ contract Exchange is ERC20, IExchange {
     /// @notice Override symbol
     string private _symbol;
 
-    /// @dev Requires a deadline that hasn't expired
-    /// @param deadline Time after which this transaction can no longer be executed.
-    modifier notExpired(uint64 deadline) {
-        if (deadline < block.timestamp) revert ExpiredTransaction(deadline);
-        _;
-    }
-
-    /// @dev Requires sold to be > 0
-    /// @param tokenAddr Address of the token sold
-    /// @param sold Amount of tokens sold
-    modifier requireTokensSold(address tokenAddr, uint256 sold) {
-        if (sold <= 0) revert InsufficientTokensSold(tokenAddr, sold, 1);
-        _;
-    }
-
-    /// @dev Requires bought to be > 0
-    /// @param tokenAddr Address of the token bought
-    /// @param bought Amount of tokens bought
-    modifier requireTokensBought(address tokenAddr, uint256 bought) {
-        if (bought <= 0) revert InsufficientTokensBought(tokenAddr, bought, 1);
-        _;
-    }
-
-    /// @dev Requires sold to be > 0
-    /// @param sold Amount of ETH sold
-    modifier requireEthSold(uint256 sold) {
-        if (sold <= 0) revert InsufficientEthSold(sold, 1);
-        _;
-    }
-
-    /// @dev Requires bought to be > 0
-    /// @param bought Amount of ETH bought
-    modifier requireEthBought(uint256 bought) {
-        if (bought <= 0) revert InsufficientEthBought(bought, 1);
-        _;
-    }
-
-    /// @dev Checks if recipient is valid
-    /// @param recipient address to check
-    modifier requireValidRecipient(address recipient) {
-        if (recipient == address(this) || recipient == address(0)) revert InvalidRecipient(recipient);
-        _;
-    }
-
-    /// @dev Checks if reserves are > 0
-    /// @param inputReserve reserve of the input asset
-    /// @param outputReserve reserve of the output asset
-    modifier requireReserves(uint256 inputReserve, uint256 outputReserve) {
-        if (inputReserve <= 0) revert InsufficientInputReserve(inputReserve, 1);
-        if (outputReserve <= 0) revert InsufficientOutputReserve(outputReserve, 1);
-        _;
-    }
-
     constructor() ERC20("Uniswap V1 Template", "UNI-TMP") {}
 
     /// @inheritdoc IExchange
@@ -101,46 +48,26 @@ contract Exchange is ERC20, IExchange {
     }
 
     /// @inheritdoc IPriceInfo
-    function getEthToTokenInputPrice(uint256 ethSold)
-        external
-        view
-        override
-        requireEthSold(ethSold)
-        returns (uint256 tokensToBuy)
-    {
+    function getEthToTokenInputPrice(uint256 ethSold) external view override returns (uint256 tokensToBuy) {
+        if (ethSold <= 0) revert InsufficientEthSold(ethSold, 1);
         return _getInputPrice(ethSold, _ethReserve(), _tokenReserve());
     }
 
     /// @inheritdoc IPriceInfo
-    function getEthToTokenOutputPrice(uint256 tokensBought)
-        external
-        view
-        override
-        requireTokensBought(address(token), tokensBought)
-        returns (uint256 ethNeeded)
-    {
+    function getEthToTokenOutputPrice(uint256 tokensBought) external view override returns (uint256 ethNeeded) {
+        if (tokensBought <= 0) revert InsufficientTokensBought(address(token), tokensBought, 1);
         return _getOutputPrice(tokensBought, _ethReserve(), _tokenReserve());
     }
 
     /// @inheritdoc IPriceInfo
-    function getTokenToEthInputPrice(uint256 tokensSold)
-        external
-        view
-        override
-        requireTokensSold(address(token), tokensSold)
-        returns (uint256 ethToBuy)
-    {
+    function getTokenToEthInputPrice(uint256 tokensSold) external view override returns (uint256 ethToBuy) {
+        if (tokensSold <= 0) revert InsufficientTokensSold(address(token), tokensSold, 1);
         return _getInputPrice(tokensSold, _tokenReserve(), _ethReserve());
     }
 
     /// @inheritdoc IPriceInfo
-    function getTokenToEthOutputPrice(uint256 ethBought)
-        external
-        view
-        override
-        requireEthBought(ethBought)
-        returns (uint256 tokensNeeded)
-    {
+    function getTokenToEthOutputPrice(uint256 ethBought) external view override returns (uint256 tokensNeeded) {
+        if (ethBought <= 0) revert InsufficientEthBought(ethBought, 1);
         return _getOutputPrice(ethBought, _tokenReserve(), _ethReserve());
     }
 
@@ -149,11 +76,11 @@ contract Exchange is ERC20, IExchange {
         external
         payable
         override
-        notExpired(deadline)
-        requireTokensSold(address(token), maxTokens)
-        requireEthSold(msg.value)
         returns (uint256 minted)
     {
+        if (deadline < block.timestamp) revert ExpiredTransaction(deadline);
+        if (maxTokens <= 0) revert InsufficientTokensSold(address(token), maxTokens, 1);
+        if (msg.value <= 0) revert InsufficientEthSold(msg.value, 1);
         uint256 totalLiquidity = totalSupply();
         if (totalLiquidity > 0) return _addLiquidity(minLiquidity, maxTokens, totalLiquidity);
         return _addInitialLiquidity(maxTokens);
@@ -163,12 +90,12 @@ contract Exchange is ERC20, IExchange {
     function removeLiquidity(uint256 amount, uint256 minEth, uint256 minTokens, uint64 deadline)
         external
         override
-        notExpired(deadline)
-        requireTokensSold(address(this), amount)
-        requireEthBought(minEth)
-        requireTokensBought(address(token), minTokens)
         returns (uint256 ethAmount, uint256 tokenAmount)
     {
+        if (deadline < block.timestamp) revert ExpiredTransaction(deadline);
+        if (amount <= 0) revert InsufficientTokensSold(address(this), amount, 1);
+        if (minEth <= 0) revert InsufficientEthBought(minEth, 1);
+        if (minTokens <= 0) revert InsufficientTokensBought(address(token), minTokens, 1);
         uint256 totalLiquidity = totalSupply();
         if (totalLiquidity <= 0) revert InsufficientLiquidity(totalLiquidity, 1);
 
@@ -221,9 +148,9 @@ contract Exchange is ERC20, IExchange {
         external
         payable
         override
-        requireValidRecipient(recipient)
         returns (uint256 tokensBought)
     {
+        if (recipient == address(this) || recipient == address(0)) revert InvalidRecipient(recipient);
         return _ethToTokenInput(msg.value, minTokens, deadline, msg.sender, recipient);
     }
 
@@ -232,9 +159,9 @@ contract Exchange is ERC20, IExchange {
         external
         payable
         override
-        requireValidRecipient(recipient)
         returns (uint256 ethSold)
     {
+        if (recipient == address(this) || recipient == address(0)) revert InvalidRecipient(recipient);
         return _ethToTokenOutput(tokensBought, msg.value, deadline, msg.sender, recipient);
     }
 
@@ -257,18 +184,18 @@ contract Exchange is ERC20, IExchange {
     /// @inheritdoc ITokenToETH
     function tokenToEthTransferInput(uint256 tokensSold, uint256 minEth, uint64 deadline, address recipient)
         external
-        requireValidRecipient(recipient)
         returns (uint256 ethBought)
     {
+        if (recipient == address(this) || recipient == address(0)) revert InvalidRecipient(recipient);
         return _tokenToEthInput(tokensSold, minEth, deadline, msg.sender, recipient);
     }
 
     /// @inheritdoc ITokenToETH
     function tokenToEthTransferOutput(uint256 ethBought, uint256 maxTokens, uint64 deadline, address recipient)
         external
-        requireValidRecipient(recipient)
         returns (uint256 tokensSold)
     {
+        if (recipient == address(this) || recipient == address(0)) revert InvalidRecipient(recipient);
         return _tokenToEthOutput(ethBought, maxTokens, deadline, msg.sender, recipient);
     }
 
@@ -359,7 +286,8 @@ contract Exchange is ERC20, IExchange {
         uint64 deadline,
         address recipient,
         address exchangeAddr
-    ) external requireValidRecipient(recipient) returns (uint256 tokensBought) {
+    ) external returns (uint256 tokensBought) {
+        if (recipient == address(this)) revert InvalidRecipient(recipient);
         return
             _tokenToTokenInput(tokensSold, minTokensBought, minEthBought, deadline, msg.sender, recipient, exchangeAddr);
     }
@@ -372,7 +300,8 @@ contract Exchange is ERC20, IExchange {
         uint64 deadline,
         address recipient,
         address exchangeAddr
-    ) external requireValidRecipient(recipient) returns (uint256 tokensSold) {
+    ) external returns (uint256 tokensSold) {
+        if (recipient == address(this)) revert InvalidRecipient(recipient);
         return
             _tokenToTokenOutput(tokensBought, maxTokensSold, maxEthSold, deadline, msg.sender, recipient, exchangeAddr);
     }
@@ -385,9 +314,9 @@ contract Exchange is ERC20, IExchange {
     /// @return liquidityMinted The amount of LPTokens minted.
     function _addLiquidity(uint256 minLiquidity, uint256 maxTokens, uint256 totalLiquidity)
         private
-        requireTokensBought(address(this), minLiquidity)
         returns (uint256 liquidityMinted)
     {
+        if (minLiquidity <= 0) revert InsufficientTokensBought(address(this), minLiquidity, 1);
         uint256 ethReserve = _ethReserve(msg.value);
         uint256 tokenAmount = Math.mulDiv(msg.value, _tokenReserve(), ethReserve);
         liquidityMinted = Math.mulDiv(msg.value, totalLiquidity, ethReserve);
@@ -437,9 +366,10 @@ contract Exchange is ERC20, IExchange {
     function _getInputPrice(uint256 inputAmount, uint256 inputReserve, uint256 outputReserve)
         private
         pure
-        requireReserves(inputReserve, outputReserve)
         returns (uint256 bought)
     {
+        if (inputReserve <= 0) revert InsufficientInputReserve(inputReserve, 1);
+        if (outputReserve <= 0) revert InsufficientOutputReserve(outputReserve, 1);
         uint256 inputAmountWithFee = inputAmount * 997;
         uint256 denominator = (inputReserve * 1000) + inputAmountWithFee;
         return Math.mulDiv(inputAmountWithFee, outputReserve, denominator);
@@ -453,9 +383,10 @@ contract Exchange is ERC20, IExchange {
     function _getOutputPrice(uint256 outputAmount, uint256 inputReserve, uint256 outputReserve)
         private
         pure
-        requireReserves(inputReserve, outputReserve)
         returns (uint256 sold)
     {
+        if (inputReserve <= 0) revert InsufficientInputReserve(inputReserve, 1);
+        if (outputReserve <= 0) revert InsufficientOutputReserve(outputReserve, 1);
         uint256 denominator = (outputReserve - outputAmount) * 997;
         return Math.mulDiv(inputReserve, outputAmount * 1000, denominator);
     }
@@ -469,11 +400,11 @@ contract Exchange is ERC20, IExchange {
     /// @return tokensBought Amount of tokens sold.
     function _ethToTokenInput(uint256 ethSold, uint256 minTokens, uint64 deadline, address buyer, address recipient)
         private
-        notExpired(deadline)
-        requireTokensBought(address(token), minTokens)
-        requireEthSold(ethSold)
         returns (uint256 tokensBought)
     {
+        if (deadline < block.timestamp) revert ExpiredTransaction(deadline);
+        if (minTokens <= 0) revert InsufficientTokensBought(address(token), minTokens, 1);
+        if (ethSold <= 0) revert InsufficientEthSold(ethSold, 1);
         tokensBought = _getInputPrice(ethSold, _ethReserve(ethSold), _tokenReserve());
         if (tokensBought < minTokens) revert InsufficientTokensBought(address(token), tokensBought, minTokens);
         token.transfer(recipient, tokensBought);
@@ -489,11 +420,11 @@ contract Exchange is ERC20, IExchange {
     /// @return ethSold Amount of ETH sold.
     function _ethToTokenOutput(uint256 tokensBought, uint256 maxEth, uint64 deadline, address buyer, address recipient)
         private
-        notExpired(deadline)
-        requireTokensBought(address(token), tokensBought)
-        requireEthSold(ethSold)
         returns (uint256 ethSold)
     {
+        if (deadline < block.timestamp) revert ExpiredTransaction(deadline);
+        if (tokensBought <= 0) revert InsufficientTokensBought(address(token), tokensBought, 1);
+        if (ethSold <= 0) revert InsufficientEthSold(ethSold, 1);
         ethSold = _getOutputPrice(tokensBought, _ethReserve(maxEth), _tokenReserve());
         if (ethSold < maxEth) revert ExceededEthBought(ethSold, maxEth);
         uint256 ethRefund = maxEth - ethSold;
@@ -511,11 +442,11 @@ contract Exchange is ERC20, IExchange {
     /// @return ethBought Amount of ETH bought.
     function _tokenToEthInput(uint256 tokensSold, uint256 minEth, uint64 deadline, address buyer, address recipient)
         private
-        notExpired(deadline)
-        requireTokensSold(address(token), tokensSold)
-        requireEthBought(minEth)
         returns (uint256 ethBought)
     {
+        if (deadline < block.timestamp) revert ExpiredTransaction(deadline);
+        if (tokensSold <= 0) revert InsufficientTokensSold(address(token), tokensSold, 1);
+        if (minEth <= 0) revert InsufficientEthBought(minEth, 1);
         ethBought = _getInputPrice(tokensSold, _tokenReserve(), _ethReserve());
         if (ethBought < minEth) revert InsufficientEthBought(ethBought, minEth);
         payable(recipient).transfer(ethBought);
@@ -532,10 +463,10 @@ contract Exchange is ERC20, IExchange {
     /// @return tokensSold Amount of tokens sold.
     function _tokenToEthOutput(uint256 ethBought, uint256 maxTokens, uint64 deadline, address buyer, address recipient)
         private
-        notExpired(deadline)
-        requireEthBought(ethBought)
         returns (uint256 tokensSold)
     {
+        if (deadline < block.timestamp) revert ExpiredTransaction(deadline);
+        if (ethBought <= 0) revert InsufficientEthBought(ethBought, 1);
         tokensSold = _getOutputPrice(ethBought, _tokenReserve(), _ethReserve());
         if (maxTokens < tokensSold) revert ExceededTokensSold(address(token), tokensSold, maxTokens);
         payable(recipient).transfer(ethBought);
@@ -560,13 +491,10 @@ contract Exchange is ERC20, IExchange {
         address buyer,
         address recipient,
         address exchangeAddr
-    )
-        private
-        notExpired(deadline)
-        requireTokensSold(address(token), tokensSold)
-        requireEthBought(minEthBought)
-        returns (uint256 tokensBought)
-    {
+    ) private returns (uint256 tokensBought) {
+        if (deadline < block.timestamp) revert ExpiredTransaction(deadline);
+        if (tokensSold <= 0) revert InsufficientTokensSold(address(token), tokensSold, 1);
+        if (minEthBought <= 0) revert InsufficientEthBought(minEthBought, 1);
         IExchange exchange = IExchange(payable(exchangeAddr));
         if (minTokensBought <= 0) revert InsufficientTokensBought(address(exchange.token()), minTokensBought, 1);
         if (exchangeAddr == address(this) || exchangeAddr == address(0)) revert InvalidExchange(exchangeAddr);
@@ -594,7 +522,9 @@ contract Exchange is ERC20, IExchange {
         address buyer,
         address recipient,
         address exchangeAddr
-    ) private notExpired(deadline) requireEthSold(maxEthSold) returns (uint256 tokensSold) {
+    ) private returns (uint256 tokensSold) {
+        if (deadline < block.timestamp) revert ExpiredTransaction(deadline);
+        if (maxEthSold <= 0) revert InsufficientEthSold(maxEthSold, 1);
         IExchange exchange = IExchange(payable(exchangeAddr));
         if (tokensBought <= 0) revert InsufficientTokensBought(address(exchange.token()), tokensBought, 1);
         uint256 ethBought = exchange.getEthToTokenOutputPrice(tokensBought);
